@@ -20,7 +20,7 @@ export function useAsistenciaApi() {
                 console.log(pair[0], pair[1]);
             }
 
-            const response = await fetch('http://localhost:3000/api/asistencia', { // Assuming the route is /api/asistencia/registro
+            const response = await fetch('https://script.google.com/macros/s/AKfycbzvIjTtWuh2p28GnkRnGttmnV3MdMJeByKxJb41tdg/dev', { // Assuming the route is /api/asistencia/registro
                 method: 'POST',
                 body: formData,
                 // Note: Content-Type is NOT set here for FormData
