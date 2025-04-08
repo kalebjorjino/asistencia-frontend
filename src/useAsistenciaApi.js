@@ -4,7 +4,7 @@ export function useAsistenciaApi() {
     const error = ref(null);
     const loading = ref(false);
 
-    const marcarAsistencia = async (dni, ubicacion, foto) => {
+    const marcarAsistencia = async (dni, ubicacion, foto, local_id) => {
         loading.value = true;
         error.value = null;
 
@@ -12,6 +12,7 @@ export function useAsistenciaApi() {
             const formData = new FormData();
             formData.append('dni', dni);
             formData.append('ubicacion', ubicacion);
+            formData.append('local_id', local_id); // Append the 'local' value
             if (foto) {
                 formData.append('foto', foto);
             }

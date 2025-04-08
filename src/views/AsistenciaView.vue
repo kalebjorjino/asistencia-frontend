@@ -14,6 +14,7 @@
           </div>
           <div class="modal-body">
             <p>DNI: {{ dniRegistrado }}</p>
+            <p>Local: {{ localRegistrado }}</p>
             <p>Fecha: {{ fechaRegistro }}</p>
             <p>Hora: {{ horaRegistro }}</p>
           </div>
@@ -35,17 +36,19 @@ const asistenciaForm = ref(null);
 const { error, loading, marcarAsistencia } = useAsistenciaApi();
 const mostrarMensaje = ref(false);
 const dniRegistrado = ref('');
+const localRegistrado = ref(''); // Nuevo ref para el local registrado
 const fechaRegistro = ref('');
 const horaRegistro = ref('');
 
 const handleRegistroAsistencia = async (formData) => {
   asistenciaForm.value.setLoading(true);
-  const { dni, ubicacion, foto } = formData;
-  await marcarAsistencia(dni, ubicacion, foto);
+  const { dni, ubicacion, foto, local_id } = formData; // Incluye 'local' de formData
+  await marcarAsistencia(dni, ubicacion, foto, local_id); // Pasa 'local' a la función de la API
   asistenciaForm.value.setLoading(false);
 
   if (!error.value) {
     dniRegistrado.value = dni;
+    localRegistrado.value = local_id; // Guarda el local registrado
     fechaRegistro.value = new Date().toLocaleDateString();
     horaRegistro.value = new Date().toLocaleTimeString();
     mostrarMensaje.value = true;
