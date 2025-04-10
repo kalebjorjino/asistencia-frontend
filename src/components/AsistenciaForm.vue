@@ -14,7 +14,7 @@
             <div class="mb-3">
               <label for="dni" class="form-label fw-bold">DNI:</label>
               <input
-                type="number"
+                type="text"
                 id="dni"
                 v-model="formData.dni"
                 class="form-control"
