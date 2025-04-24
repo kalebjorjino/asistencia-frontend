@@ -9,14 +9,15 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Registro Exitoso</h5>
+            <h5 class="modal-title">{{ mensajeModalTitulo }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click="cerrarMensaje"></button>
           </div>
           <div class="modal-body">
             <p>DNI: {{ dniRegistrado }}</p>
             <p>Local: {{ localRegistrado }}</p>
+            <p v-if="horaEntradaRegistro">Hora de Entrada: {{ horaEntradaRegistro }}</p>
+            <p v-if="horaSalidaRegistro">Hora de Salida: {{ horaSalidaRegistro }}</p>
             <p>Fecha: {{ fechaRegistro }}</p>
-            <p>Hora: {{ horaRegistro }}</p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="cerrarMensaje">Cerrar</button>
@@ -35,27 +36,46 @@ import { useAsistenciaApi } from '../useAsistenciaApi';
 const asistenciaForm = ref(null);
 const { error, loading, marcarAsistencia } = useAsistenciaApi();
 const mostrarMensaje = ref(false);
+const mensajeModalTitulo = ref('');
 const dniRegistrado = ref('');
-const localRegistrado = ref(''); // Nuevo ref para el local registrado
+const localRegistrado = ref('');
 const fechaRegistro = ref('');
-const horaRegistro = ref('');
+const horaEntradaRegistro = ref('');
+const horaSalidaRegistro = ref('');
+const dniNoExisteError = ref(null); // Nuevo ref para el error de DNI
 
 const handleRegistroAsistencia = async (formData) => {
   asistenciaForm.value.setLoading(true);
-  const { dni, ubicacion, foto, local_id } = formData; // Incluye 'local' de formData
-  await marcarAsistencia(dni, ubicacion, foto, local_id); // Pasa 'local' a la función de la API
+  asistenciaForm.value.setError(null); // Limpiar errores previos
+  dniNoExisteError.value = null; // Limpiar error de DNI previo
+  const { dni, ubicacion, foto, local_id } = formData;
+  const response = await marcarAsistencia(dni, ubicacion, foto, local_id);
   asistenciaForm.value.setLoading(false);
 
-  if (!error.value) {
+  if (response && response.ok) {
+    const data = await response.json();
     dniRegistrado.value = dni;
-    localRegistrado.value = local_id; // Guarda el local registrado
+    localRegistrado.value = formData.local_id;
+
+    if (data.tipo === 'entrada') {
+      mensajeModalTitulo.value = 'Entrada Registrada';
+      horaEntradaRegistro.value = data.hora_entrada;
+      horaSalidaRegistro.value = '';
+    } else if (data.tipo === 'salida') {
+      mensajeModalTitulo.value = 'Salida Registrada';
+      horaSalidaRegistro.value = data.hora_salida;
+      horaEntradaRegistro.value = '';
+    }
+
     fechaRegistro.value = new Date().toLocaleDateString();
-    horaRegistro.value = new Date().toLocaleTimeString();
     mostrarMensaje.value = true;
     asistenciaForm.value.resetForm();
+  } else if (response && response.status === 404) {
+    const errorData = await response.json();
+    dniNoExisteError.value = errorData.error;
   } else {
-    asistenciaForm.value.setError(error.value.message || 'Error al registrar la asistencia');
-    // Opcional: limpiar el error después de un tiempo
+    const errorData = await response.json();
+    asistenciaForm.value.setError(errorData.errors ? JSON.stringify(errorData.errors) : 'Error al registrar la asistencia');
     setTimeout(() => {
       asistenciaForm.value.setError(null);
     }, 3000);
@@ -64,5 +84,14 @@ const handleRegistroAsistencia = async (formData) => {
 
 const cerrarMensaje = () => {
   mostrarMensaje.value = false;
+  horaEntradaRegistro.value = '';
+  horaSalidaRegistro.value = '';
 };
 </script>
+
+<style scoped>
+.error-dni {
+  color: red;
+  margin-top: 0.5rem;
+}
+</style>

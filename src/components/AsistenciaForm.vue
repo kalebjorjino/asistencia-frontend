@@ -21,6 +21,7 @@
                 placeholder="Ingrese su DNI"
                 required
               />
+              <div v-if="props.dniNoExisteError" class="text-danger mt-1">{{ props.dniNoExisteError }}</div>
             </div>
 
             <div class="mb-3">
@@ -83,7 +84,7 @@
             <button
               type="submit"
               class="btn btn-primary btn-block form-control"
-              :disabled="!formData.foto || loadingLocales || loading"
+              :disabled="!formData.foto || loadingLocales || loading || props.dniNoExisteError"
             >
               Asistencia
             </button>
@@ -102,10 +103,13 @@ import { ref, reactive, watch, onMounted, onUnmounted } from 'vue';
 import { useGeolocation } from '@vueuse/core';
 
 const emit = defineEmits(['submit']);
+const props = defineProps({
+  dniNoExisteError: String,
+});
 
 const formData = reactive({
   dni: '',
-  local_id: '', // Campo corregido para coincidir con el v-model
+  local_id: '',
   ubicacion: '',
   foto: null,
 });
@@ -117,12 +121,10 @@ const error = ref(null);
 const currentTime = ref('');
 let intervalId;
 
-// Nuevos refs para la lógica del select de Locales
 const locales = ref([]);
 const loadingLocales = ref(false);
 const errorLocales = ref(null);
 
-// Función para obtener los locales desde la API
 const fetchLocales = async () => {
   loadingLocales.value = true;
   errorLocales.value = null;
@@ -131,13 +133,13 @@ const fetchLocales = async () => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.text(); // La respuesta del PHP es HTML de las opciones
+    const data = await response.text();
     const tempElement = document.createElement('div');
     tempElement.innerHTML = data;
     const options = tempElement.querySelectorAll('option');
     const localesArray = [];
     options.forEach(option => {
-      if (option.value !== '') { // Excluir la opción "Selecciona"
+      if (option.value !== '') {
         localesArray.push({
           local_id: option.value,
           local_nom: option.textContent
@@ -164,7 +166,7 @@ const updateTime = () => {
 onMounted(() => {
   updateTime();
   intervalId = setInterval(updateTime, 1000);
-  fetchLocales(); // Llama a la función para obtener los locales al montar el componente
+  fetchLocales();
 });
 
 onUnmounted(() => {
@@ -207,11 +209,11 @@ const handleFileUpload = (event) => {
 defineExpose({
   resetForm: () => {
     formData.dni = '';
-    formData.local_id = ''; // Resetear el campo de local
+    formData.local_id = '';
     formData.foto = null;
     previewImage.value = null;
     if (inputFile.value) {
-      inputFile.value.value = ''; // Clear the file input
+      inputFile.value.value = '';
     }
   },
   setLoading: (value) => {
@@ -226,12 +228,9 @@ defineExpose({
 <style scoped>
 .rounded-clock {
   width: 200px;
-  /* Ajusta el tamaño según necesites */
   height: 200px;
   background-color: #f0f0f0;
-  /* Color de fondo del reloj */
   border-radius: 50%;
-  /* Hace que el div sea un círculo */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -239,9 +238,7 @@ defineExpose({
 
 .time {
   font-size: 5em;
-  /* Ajusta el tamaño del texto de la hora */
   font-weight: bold;
   color: #333;
-  /* Color del texto de la hora */
 }
 </style>
