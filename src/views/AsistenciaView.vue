@@ -14,7 +14,6 @@
           </div>
           <div class="modal-body">
             <p>DNI: {{ dniRegistrado }}</p>
-            <p>Local: {{ localRegistrado }}</p>
             <p v-if="horaEntradaRegistro">Hora de Entrada: {{ horaEntradaRegistro }}</p>
             <p v-if="horaSalidaRegistro">Hora de Salida: {{ horaSalidaRegistro }}</p>
             <p>Fecha: {{ fechaRegistro }}</p>
@@ -38,7 +37,6 @@ const { error, loading, marcarAsistencia } = useAsistenciaApi();
 const mostrarMensaje = ref(false);
 const mensajeModalTitulo = ref('');
 const dniRegistrado = ref('');
-const localRegistrado = ref('');
 const fechaRegistro = ref('');
 const horaEntradaRegistro = ref('');
 const horaSalidaRegistro = ref('');
@@ -48,14 +46,13 @@ const handleRegistroAsistencia = async (formData) => {
   asistenciaForm.value.setLoading(true);
   asistenciaForm.value.setError(null); // Limpiar errores previos
   dniNoExisteError.value = null; // Limpiar error de DNI previo
-  const { dni, ubicacion, foto, local_id } = formData;
-  const response = await marcarAsistencia(dni, ubicacion, foto, local_id);
+  const { dni, ubicacion, foto } = formData;
+  const response = await marcarAsistencia(dni, ubicacion, foto);
   asistenciaForm.value.setLoading(false);
 
   if (response && response.ok) {
     const data = await response.json();
     dniRegistrado.value = dni;
-    localRegistrado.value = formData.local_id;
 
     if (data.tipo === 'entrada') {
       mensajeModalTitulo.value = 'Entrada Registrada';

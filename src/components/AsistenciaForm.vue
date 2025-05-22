@@ -25,23 +25,6 @@
             </div>
 
             <div class="mb-3">
-              <label for="local_id" class="form-label fw-bold">Local:</label>
-              <select
-                id="local_id"
-                v-model="formData.local_id"
-                class="form-select"
-                required
-              >
-                <option value="" disabled>Seleccione un local</option>
-                <option v-for="local in locales" :key="local.local_id" :value="local.local_id">
-                  {{ local.local_nom }}
-                </option>
-              </select>
-              <div v-if="errorLocales" class="text-danger mt-1">{{ errorLocales }}</div>
-              <div v-if="loadingLocales" class="text-muted mt-1">Cargando locales...</div>
-            </div>
-
-            <div class="mb-3">
               <label for="ubicacion" class="form-label fw-bold">Ubicación:</label>
               <input
                 type="text"
@@ -84,7 +67,7 @@
             <button
               type="submit"
               class="btn btn-primary btn-block form-control"
-              :disabled="!formData.foto || loadingLocales || loading || props.dniNoExisteError"
+              :disabled="!formData.foto || loading || props.dniNoExisteError"
             >
               Asistencia
             </button>
@@ -109,7 +92,6 @@ const props = defineProps({
 
 const formData = reactive({
   dni: '',
-  local_id: '',
   ubicacion: '',
   foto: null,
 });
@@ -120,40 +102,6 @@ const loading = ref(false);
 const error = ref(null);
 const currentTime = ref('');
 let intervalId;
-
-const locales = ref([]);
-const loadingLocales = ref(false);
-const errorLocales = ref(null);
-
-const fetchLocales = async () => {
-  loadingLocales.value = true;
-  errorLocales.value = null;
-  try {
-    const response = await fetch('https://www.megabotikas.com/api/controller/local.php?op=combo');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.text();
-    const tempElement = document.createElement('div');
-    tempElement.innerHTML = data;
-    const options = tempElement.querySelectorAll('option');
-    const localesArray = [];
-    options.forEach(option => {
-      if (option.value !== '') {
-        localesArray.push({
-          local_id: option.value,
-          local_nom: option.textContent
-        });
-      }
-    });
-    locales.value = localesArray;
-  } catch (e) {
-    console.error('Error al obtener los locales:', e);
-    errorLocales.value = 'Error al cargar los locales. Por favor, intente de nuevo.';
-  } finally {
-    loadingLocales.value = false;
-  }
-};
 
 const updateTime = () => {
   const now = new Date();
@@ -166,7 +114,6 @@ const updateTime = () => {
 onMounted(() => {
   updateTime();
   intervalId = setInterval(updateTime, 1000);
-  fetchLocales();
 });
 
 onUnmounted(() => {
@@ -209,7 +156,6 @@ const handleFileUpload = (event) => {
 defineExpose({
   resetForm: () => {
     formData.dni = '';
-    formData.local_id = '';
     formData.foto = null;
     previewImage.value = null;
     if (inputFile.value) {
