@@ -34,12 +34,11 @@
               />
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3" v-if="formData.dni">
               <button
                 type="button"
                 class="btn btn-secondary form-control"
                 @click="triggerCamera"
-                :disabled="!formData.dni"
               >
                 Abrir Cámara
               </button>
@@ -58,10 +57,15 @@
                   :src="previewImage"
                   alt="Foto de Asistencia"
                   class="img-fluid rounded"
-                  style="max-height: 500px;"
+                  style="max-height: 450px;"
                 />
               </div>
             </div>
+
+            <!-- ✅ Si NO hay DNI, mostrar solo un mensaje o dejar el espacio vacío -->
+<div class="mb-3" v-else>
+  <div class="text-muted text-center">Para capturar su evidencia fotográfica, primero ingrese su DNI.</div>
+</div>
 
             <button
               type="submit"
