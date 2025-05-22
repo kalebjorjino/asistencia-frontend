@@ -4,8 +4,8 @@ import { getCurrentInstance, ref, onMounted } from 'vue';
 
 const instance = getCurrentInstance();
 const esMobileOTablet = ref(false);
+const mostrarBotonInstalacion = ref(false); // 👈 Nuevo: controlar visibilidad del botón
 
-// 🔴 Variable para guardar el evento del prompt
 let deferredPrompt = null;
 
 onMounted(() => {
@@ -13,28 +13,45 @@ onMounted(() => {
     esMobileOTablet.value = instance.appContext.config.globalProperties.$esMobileOTablet();
   }
 
-  // ✅ Captura el evento cuando el navegador está listo para instalar la PWA
   window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();         // Evita que el navegador lo muestre automáticamente
-    deferredPrompt = e;         // Guarda el evento para usarlo luego
-    e.prompt();                 // Muestra el prompt de instalación de inmediato
-
-    // ✅ Opcional: puedes registrar si el usuario acepta o no
-    e.userChoice.then(choiceResult => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('El usuario aceptó instalar la app');
-      } else {
-        console.log('El usuario rechazó la instalación');
-      }
-    });
+    e.preventDefault();        // 👈 Evita que se muestre automáticamente
+    deferredPrompt = e;        // 👈 Guarda el evento
+    mostrarBotonInstalacion.value = true; // 👈 Muestra botón al usuario
   });
 });
+
+// 👇 Función que se llama con un clic del usuario
+const instalarApp = async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('✅ Usuario aceptó instalar la app');
+    } else {
+      console.log('❌ Usuario rechazó la instalación');
+    }
+    deferredPrompt = null;
+    mostrarBotonInstalacion.value = false; // Ocultar botón después
+  }
+};
 </script>
 
 <template>
   <div v-if="esMobileOTablet">
+    <!-- Vista principal -->
     <router-view></router-view>
+
+    <!-- 🔘 Botón de instalación (solo si se puede instalar) -->
+    <button
+      v-if="mostrarBotonInstalacion"
+      @click="instalarApp"
+      style="position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem; background: #28a745; color: white; border: none; border-radius: 10px; font-size: 1rem; z-index: 999;"
+    >
+      Instalar App 📲
+    </button>
   </div>
+
+  <!-- Vista solo para PC -->
   <div v-else class="pc-bloqueado">
     <div class="mensaje-contenedor">
       <h1>Acceso solo desde dispositivos móviles</h1>
@@ -47,6 +64,7 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
 
 <style>
 body {
