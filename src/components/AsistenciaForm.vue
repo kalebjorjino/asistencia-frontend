@@ -24,7 +24,6 @@
             </div>
 
             <div class="mb-3">
-              <label for="ubicacion" class="form-label fw-bold">Ubicación:</label>
               <input
                 type="hidden"
                 id="ubicacion"
@@ -59,7 +58,7 @@
                   :src="previewImage"
                   alt="Foto de Asistencia"
                   class="img-fluid rounded"
-                  style="max-height: 150px;"
+                  style="max-height: 500px;"
                 />
               </div>
             </div>
