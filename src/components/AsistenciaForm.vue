@@ -7,7 +7,6 @@
     </div>
     <div class="container">
       <div class="card shadow">
-        <h2 class="card-title text-center mb-4 ">MEGABOTIKAS E.I.R.L</h2>
         <div class="card-body p-4">
           <h2 class="card-title text-center mb-4 fw-bold">REGISTRO ASISTENCIA</h2>
           <form @submit.prevent="emit('submit', formData)">
@@ -27,7 +26,7 @@
             <div class="mb-3">
               <label for="ubicacion" class="form-label fw-bold">Ubicación:</label>
               <input
-                type="text"
+                type="hidden"
                 id="ubicacion"
                 v-model="formData.ubicacion"
                 class="form-control"
@@ -41,6 +40,7 @@
                 type="button"
                 class="btn btn-secondary form-control"
                 @click="triggerCamera"
+                :disabled="!formData.dni"
               >
                 Abrir Cámara
               </button>
@@ -66,7 +66,7 @@
 
             <button
               type="submit"
-              class="btn btn-primary btn-block form-control"
+              class="btn btn-primary btn-block form-control d-none"
               :disabled="!formData.foto || loading || props.dniNoExisteError"
             >
               Asistencia
@@ -148,6 +148,11 @@ const handleFileUpload = (event) => {
   formData.foto = file;
   if (file) {
     previewImage.value = URL.createObjectURL(file);
+
+    // ✅ Envío automático del formulario si DNI está lleno y no hay errores
+    if (!props.dniNoExisteError && formData.dni && formData.ubicacion) {
+      emit('submit', formData);
+    }
   } else {
     previewImage.value = null;
   }

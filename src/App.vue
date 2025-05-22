@@ -5,10 +5,29 @@ import { getCurrentInstance, ref, onMounted } from 'vue';
 const instance = getCurrentInstance();
 const esMobileOTablet = ref(false);
 
+// 🔴 Variable para guardar el evento del prompt
+let deferredPrompt = null;
+
 onMounted(() => {
   if (instance && instance.appContext.config.globalProperties.$esMobileOTablet) {
     esMobileOTablet.value = instance.appContext.config.globalProperties.$esMobileOTablet();
   }
+
+  // ✅ Captura el evento cuando el navegador está listo para instalar la PWA
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();         // Evita que el navegador lo muestre automáticamente
+    deferredPrompt = e;         // Guarda el evento para usarlo luego
+    e.prompt();                 // Muestra el prompt de instalación de inmediato
+
+    // ✅ Opcional: puedes registrar si el usuario acepta o no
+    e.userChoice.then(choiceResult => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('El usuario aceptó instalar la app');
+      } else {
+        console.log('El usuario rechazó la instalación');
+      }
+    });
+  });
 });
 </script>
 
