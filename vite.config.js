@@ -24,7 +24,7 @@ export default defineConfig({
         scope: '/',
         icons: [
           {
-            src: '/img/icons/image1.png',
+            src: '/img/icons/image2.png',
             sizes: '192x192',
             type: 'image/png',
           },
