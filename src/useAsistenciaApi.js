@@ -26,7 +26,7 @@ export function useAsistenciaApi() {
                 }
             }
 
-            const response = await fetch('http://www.megabotikas.com/asistencia-api/controller/asistencia.php?op=registrarAsistencia', {
+            const response = await fetch('http://www.megabotikas.com/asistencia/controller/asistencia.php?op=registrarAsistencia', {
                 method: 'POST',
                 body: formData,
                 // NO poner headers Content-Type aquí para FormData
