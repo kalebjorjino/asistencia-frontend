@@ -16,51 +16,41 @@ export function useAsistenciaApi() {
                 formData.append('foto', foto);
             }
 
-            // Loguear contenido de FormData para ver qué se está enviando
-            console.log('Contenido de FormData antes de enviar:');
-            for (let pair of formData.entries()) {
-                if(pair[0] === 'foto' && pair[1] instanceof File) {
-                    console.log(pair[0], pair[1].name, pair[1].size, pair[1].type);
-                } else {
-                    console.log(pair[0], pair[1]);
-                }
-            }
-
-            const response = await fetch('https://www.megabotikas.com/asistencia/controller/asistencia.php?op=registrarAsistencia', {
+            const response = await fetch('https://megabotikas.com/asistencia/controller/asistencia.php?op=registrarAsistencia', {
                 method: 'POST',
                 body: formData,
-                // NO poner headers Content-Type aquí para FormData
             });
 
-            // Leer la respuesta como texto para depurar cualquier error JSON o mensaje del backend
-            const text = await response.text();
-            console.log('Respuesta del backend (texto):', text);
-
-            // Intentar parsear JSON si es posible
+            // Intentar parsear JSON siempre para obtener el mensaje de error o éxito
             let data;
             try {
-                data = JSON.parse(text);
+                data = await response.json();
             } catch (jsonError) {
-                console.error('Error parseando JSON:', jsonError);
-                throw new Error('Respuesta no es JSON válido');
+                // Si la respuesta no es JSON (inesperado), crear un error genérico
+                console.error('Respuesta no es JSON válido:', await response.text()); // Loguear texto si falla JSON
+                // Devolver un objeto de error genérico si la respuesta no fue OK
+                if (!response.ok) {
+                    return { ok: false, status: response.status, error: 'Error inesperado del servidor.' };
+                }
+                // Si la respuesta fue OK pero no es JSON, es un problema
+                throw new Error('Respuesta exitosa pero no es JSON válido');
             }
 
+            // Si la respuesta NO fue OK (ej. 404, 400, 500)
             if (!response.ok) {
                 console.error('Error backend:', data);
-                throw new Error(data.error || 'Error desconocido al registrar asistencia');
+                // Devolver el objeto de error estructurado
+                return { ok: false, status: response.status, error: data.error || 'Error desconocido al registrar asistencia' };
             }
 
-            // Retornar un objeto similar a response para que tu código actual siga funcionando
-            return {
-                ok: response.ok,
-                status: response.status,
-                json: async () => data
-            };
+            // Si la respuesta fue OK
+            return { ok: true, data }; // Devolver éxito con los datos
 
         } catch (err) {
             console.error('Error en marcarAsistencia:', err);
-            error.value = err.message || err;
-            return null;
+            error.value = err.message || 'Error de conexión o al procesar la solicitud.';
+            // Devolver un objeto de error genérico para errores de red/fetch
+            return { ok: false, status: 500, error: error.value };
         } finally {
             loading.value = false;
         }

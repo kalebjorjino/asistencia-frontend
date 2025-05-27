@@ -21,6 +21,7 @@
                 required
               />
               <div v-if="props.dniNoExisteError" class="text-danger mt-1">{{ props.dniNoExisteError }}</div>
+              <div v-if="props.noScheduleError" class="text-danger mt-1">{{ props.noScheduleError }}</div> <!-- NUEVO -->
             </div>
 
             <div class="mb-3">
@@ -91,6 +92,7 @@ import { useGeolocation } from '@vueuse/core';
 const emit = defineEmits(['submit']);
 const props = defineProps({
   dniNoExisteError: String,
+  noScheduleError: String, // <-- NUEVO
 });
 
 const formData = reactive({
@@ -152,9 +154,9 @@ const handleFileUpload = (event) => {
   if (file) {
     previewImage.value = URL.createObjectURL(file);
 
-    // ✅ Envío automático del formulario si DNI está lleno y no hay errores
-    if (!props.dniNoExisteError && formData.dni && formData.ubicacion) {
-      emit('submit', formData);
+    // ✅ Envío automático del formulario si DNI está lleno y NO hay errores
+    if (formData.dni && formData.ubicacion && !props.dniNoExisteError && !props.noScheduleError) { // <-- Añadir chequeo de noScheduleError
+      emit("submit", formData);
     }
   } else {
     previewImage.value = null;
